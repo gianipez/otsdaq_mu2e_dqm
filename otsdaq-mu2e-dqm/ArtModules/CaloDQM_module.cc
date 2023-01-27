@@ -29,12 +29,14 @@ namespace ots {
     struct Config {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
-      fhicl::Atom<int>             port      { Name("port"),      Comment("This parameter sets the port where the histogram will be sent") };
-      fhicl::Atom<std::string>     address   { Name("address"),   Comment("This paramter sets the IP address where the histogram will be sent") };
-      fhicl::Atom<std::string>     moduleTag { Name("moduleTag"), Comment("Module tag name") };
-      fhicl::Sequence<std::string> histType  { Name("histType"),  Comment("This parameter determines which quantity is histogrammed") };
-      fhicl::Atom<int>             freqDQM   { Name("freqDQM"),   Comment("Frequency for sending histograms to the data-receiver") };
-      fhicl::Atom<int>             diag      { Name("diagLevel"), Comment("Diagnostic level"), 0 };
+      fhicl::Atom<int>             port            { Name("port"),            Comment("This parameter sets the port where the histogram will be sent") };
+      fhicl::Atom<std::string>     address         { Name("address"),         Comment("This paramter sets the IP address where the histogram will be sent") };
+      fhicl::Atom<std::string>     moduleTag       { Name("moduleTag"),       Comment("Module tag name") };
+      fhicl::Atom<std::string>     caloHitsTag     { Name("caloHitsTag"),     Comment("CaloHits module tag name") };
+      fhicl::Atom<std::string>     caloClustersTag { Name("caloClustersTag"), Comment("CaloClusters module tag name") };
+      fhicl::Sequence<std::string> histType        { Name("histType"),        Comment("This parameter determines which quantity is histogrammed") };
+      fhicl::Atom<int>             freqDQM         { Name("freqDQM"),         Comment("Frequency for sending histograms to the data-receiver") };
+      fhicl::Atom<int>             diag            { Name("diagLevel"),       Comment("Diagnostic level"), 0 };
     };
 
     typedef art::EDAnalyzer::Table<Config> Parameters;
@@ -56,10 +58,12 @@ namespace ots {
     int                       port_;
     std::string               address_;
     std::string               moduleTag_;
+    std::string               caloHitsTag_;
+    std::string               caloClustersTag_;
     std::vector<std::string>  histType_;
     int                       freqDQM_,  diagLevel_, evtCounter_;
     art::ServiceHandle<art::TFileService> tfs;
-    CaloDQMHistoContainer* summary_histos  = new CaloDQMHistoContainer();
+    CaloDQMHistoContainer*    summary_histos  = new CaloDQMHistoContainer();
     HistoSender*              histSender_;
     bool                      doOnspillHist_, doOffspillHist_;
     std::string               moduleTag;
@@ -69,7 +73,8 @@ namespace ots {
 
 ots::CaloDQM::CaloDQM(Parameters const& conf)
   : art::EDAnalyzer(conf), conf_(conf()), port_(conf().port()), address_(conf().address()),
-    moduleTag_(conf().moduleTag()), histType_(conf().histType()), 
+    moduleTag_(conf().moduleTag()), caloHitsTag_(conf().caloHitsTag()), caloClustersTag_(conf().caloClustersTag()), 
+    histType_(conf().histType()), 
     freqDQM_(conf().freqDQM()), diagLevel_(conf().diag()), evtCounter_(0), 
     doOnspillHist_(false), doOffspillHist_(false) {
   histSender_  = new HistoSender(address_, port_);
@@ -105,16 +110,16 @@ void ots::CaloDQM::beginJob() {
 void ots::CaloDQM::analyze(art::Event const& event) {
   ++evtCounter_;
  
-  auto const caloH   = event.getValidHandle<mu2e::CaloHitCollection>("CaloHitMakerFast::calo");
-  const mu2e::CaloHitCollection         *caloHits = caloH.product();
+  auto const caloH    = event.getValidHandle<mu2e::CaloHitCollection>(caloHitsTag_);
+  const mu2e::CaloHitCollection      *caloHits(0);
+  if (caloH.isValid())    caloHits = caloH.product();
   
-  auto const clusterH   = event.getValidHandle<mu2e::CaloClusterCollection>("CaloClusterFast");
-  const mu2e::CaloClusterCollection  *clusters = clusterH.product();
-
+  auto const clusterH = event.getValidHandle<mu2e::CaloClusterCollection>(caloClustersTag_);
+  const mu2e::CaloClusterCollection  *clusters(0);
+  if (clusterH.isValid()) clusters = clusterH.product();
   
   summary_fill(summary_histos, caloHits, clusters);
   
-
   if (evtCounter_ % freqDQM_  != 0) return;
 
   //send a packet AND reset the histograms
@@ -133,19 +138,23 @@ void ots::CaloDQM::analyze(art::Event const& event) {
 
 
 void ots::CaloDQM::summary_fill(CaloDQMHistoContainer       *histos, 
-					 const mu2e::CaloHitCollection        *CaloHits,
-					 const mu2e::CaloClusterCollection    *Clusters) {
+				const mu2e::CaloHitCollection        *CaloHits,
+				const mu2e::CaloClusterCollection    *Clusters) {
   //  __MOUT__ << "filling Summary histograms..."<< std::endl;
 
   if (histos->histograms.size() == 0) {
-    __MOUT__ << "No histograms booked. Should they have been created elsewhere?"
+    __MOUT__ << "[CaloDQM::summary_fill] No histograms booked. Should they have been created elsewhere?"
 	     << std::endl;
   } else {
       
     // Used to get the number of triggered events from each trigger path
-    histos->histograms[0]._Hist->Fill(CaloHits->size()); 
-    histos->histograms[1]._Hist->Fill(Clusters->size());
-    for (size_t i=0; i<Clusters->size(); ++i){
+    size_t nHits(0), nClusters(0);
+    if (CaloHits != 0) nHits = CaloHits->size();
+    histos->histograms[0]._Hist->Fill(nHits); 
+
+    if (Clusters !=0) nClusters = Clusters->size();
+    histos->histograms[1]._Hist->Fill(nClusters);
+    for (size_t i=0; i<nClusters; ++i){
       const mu2e::CaloCluster* item = &Clusters->at(i);
       histos->histograms[2]._Hist->Fill(item->energyDep());
     }

@@ -96,9 +96,15 @@ ots::TrackerDQM::TrackerDQM(Parameters const& conf)
 void ots::TrackerDQM::beginJob() {
   __MOUT__ << "[TrackerDQM::beginJob] Beginning job" << std::endl;
   summary_histos->BookSummaryHistos(tfs,
-				    "PanelOccupancy", 220, 0, 220);
+				    moduleTag_,
+				    "PanelOccupancy",
+				    "PanelOccupancy",
+				    220, 0, 220);
   summary_histos->BookSummaryHistos(tfs,
-				    "PlaneOccupancy", 40, 0, 40);
+				    moduleTag_,
+				    "PlaneOccupancy",
+				    "PlaneOccupancy",
+				    40, 0, 40);
 			     
   if (doPedestalHist_){
     for (int plane = 0; plane <  mu2e::StrawId::_nplanes; plane++) {
@@ -118,7 +124,7 @@ void ots::TrackerDQM::beginJob() {
     for (int plane = 0; plane <  mu2e::StrawId::_nplanes; plane++) {
       for (int panel = 0; panel < mu2e::StrawId::_npanels; panel++) {
 	std::string   hName = "Panel_" + std::to_string(plane) + "_" + std::to_string(panel);
-	panel_histos->BookHistos(tfs, hName, plane, panel, -1);
+	panel_histos->BookHistos(tfs, hName,  plane, panel, -1);
       }
     }
   }

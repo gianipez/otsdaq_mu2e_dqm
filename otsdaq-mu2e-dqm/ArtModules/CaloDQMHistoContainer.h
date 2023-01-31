@@ -25,12 +25,15 @@ namespace ots {
 
     std::vector<summaryInfoHist_> histograms;
 
-    void BookSummaryHistos(art::ServiceHandle<art::TFileService> tfs, std::string Title,
+    void BookSummaryHistos(art::ServiceHandle<art::TFileService> tfs, 
+			   std::string Module,
+			   std::string Name,
+			   std::string Title,
 			   int nBins, float min, float max) {
       histograms.push_back(summaryInfoHist_());
-      art::TFileDirectory testDir = tfs->mkdir("CaloDQM_summary");
+      art::TFileDirectory testDir = tfs->mkdir(Form("%s_summary", Module.c_str()));
       this->histograms[histograms.size() - 1]._Hist = 
-	testDir.make<TH1F>(Title.c_str(), Title.c_str(), nBins, min, max);
+	testDir.make<TH1F>(Name.c_str(), Title.c_str(), nBins, min, max);
     }
   
     /* void BookHistos(art::ServiceHandle<art::TFileService> tfs, std::string Title, */

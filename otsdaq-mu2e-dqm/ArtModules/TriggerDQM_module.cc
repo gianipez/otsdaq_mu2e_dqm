@@ -88,8 +88,12 @@ ots::TriggerDQM::TriggerDQM(Parameters const& conf)
 void ots::TriggerDQM::beginJob() {
   __MOUT__ << "[TriggerDQM::beginJob] Beginning job" << std::endl;
   summary_histos->BookSummaryHistos(tfs,
+				    moduleTag_,
+				    "TrigPaths",
 				    "Trigger paths", 101, 99.5, 200.5);
   summary_histos->BookSummaryHistos(tfs,
+				    moduleTag_,
+				    "TrigCounts",
 				    "Trigger counts", 1, 0, 1);
 }
 

@@ -96,14 +96,19 @@ ots::CaloDQM::CaloDQM(Parameters const& conf)
 void ots::CaloDQM::beginJob() {
   __MOUT__ << "[CaloDQM::beginJob] Beginning job" << std::endl;
   summary_histos->BookSummaryHistos(tfs,
+				    moduleTag_,
 				    "CaloHits",
-				    //"Calo hits, nHits; nCaloHits; Events/60"  ,
+				    "Calo hits, nHits; nCaloHits; Events/60"  ,
 				    200, 0, 1e3);
   summary_histos->BookSummaryHistos(tfs,
-				    "CaloClusters", //nClusters; nClusters; Events"  ,
+				    moduleTag_,
+				    "CaloClusters", 
+				    "CaloClusters; nClusters; Events"  ,
 				    100, 0, 100);
   summary_histos->BookSummaryHistos(tfs,
-				    "CaloEnergy", //caloEnergy; E[MeV]; Events/(5 MeV)"  , 
+				    moduleTag_,
+				    "CaloEnergy",
+				    "CaloEnergy; E[MeV]; Events/(5 MeV)"  , 
 				    250, 0, 500.);
 
 }

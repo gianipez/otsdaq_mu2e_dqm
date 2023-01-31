@@ -93,18 +93,26 @@ ots::IntensityInfoDQM::IntensityInfoDQM(Parameters const& conf)
 void ots::IntensityInfoDQM::beginJob() {
   __MOUT__ << "[IntensityInfoDQM::beginJob] Beginning job" << std::endl;
   summary_histos->BookSummaryHistos(tfs,
+				    moduleTag_,
+				    "CAPHRIHits",
 				    "CAPHRI hits; nCAPHRIHits; Events",
 				    100, 0, 100);
   //caloInfo
   summary_histos->BookSummaryHistos(tfs,
+				    moduleTag_,
+				    "CaloHits",
 				    "IntensityInfo Calo, nHits; nCaloHits; Events/60"  ,
 				    200, 0, 12e3);
   summary_histos->BookSummaryHistos(tfs,
+				    moduleTag_,
+				    "CaloEnergy",
 				    "IntensityInfo Calo, caloEnergy; E[MeV]; Events/(5 MeV)"  , 
 				    400, 0, 2e3);
 
   //tracker info
   summary_histos->BookSummaryHistos(tfs,
+				    moduleTag_,
+				    "TrackerHits",
 				    "IntensityInfo Tracker; nTrkHits", 200, 0, 12e3);
 }
 

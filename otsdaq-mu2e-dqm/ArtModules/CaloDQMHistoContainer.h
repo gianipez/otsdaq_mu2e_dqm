@@ -28,7 +28,7 @@ namespace ots {
     void BookSummaryHistos(art::ServiceHandle<art::TFileService> tfs, std::string Title,
 			   int nBins, float min, float max) {
       histograms.push_back(summaryInfoHist_());
-      art::TFileDirectory testDir = tfs->mkdir("Calo_summary");
+      art::TFileDirectory testDir = tfs->mkdir("CaloDQM_summary");
       this->histograms[histograms.size() - 1]._Hist = 
 	testDir.make<TH1F>(Title.c_str(), Title.c_str(), nBins, min, max);
     }

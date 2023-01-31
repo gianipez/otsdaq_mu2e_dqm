@@ -128,6 +128,7 @@ void ots::TrackerDQM::analyze(art::Event const& event) {
   ++evtCounter_;
   
   std::vector<art::Handle<artdaq::Fragments>> fragmentHandles = event.getMany<std::vector<artdaq::Fragment>>();
+  __MOUT__ << "N Mu2e Fragment collections =  "<< fragmentHandles.size() << std::endl;
 
   for (const auto& handle : fragmentHandles) {
     if (!handle.isValid() || handle->empty()) {
@@ -140,6 +141,7 @@ void ots::TrackerDQM::analyze(art::Event const& event) {
         for (size_t ii = 0; ii < mef.tracker_block_count(); ++ii) {
           auto pair = mef.trackerAtPtr(ii);
           mu2e::TrackerFragment cc(pair);
+	  __MOUT__ << "Tracker fragment  "<< cc << std::endl;
           analyze_tracker_(cc);
         }
       }
@@ -178,6 +180,7 @@ void  ots::TrackerDQM::analyze_tracker_(const mu2e::TrackerFragment& cc) {
 	//mu2e::TrkTypes::TDCValues tdc = {	    static_cast<uint16_t>(trkData.first->TDC0()),	    static_cast<uint16_t>(trkData.first->TDC1()) };
 	//mu2e::TrkTypes::TOTValues tot = { trkData.first->TOT0,					    trkData.first->TOT1 };
 	mu2e::TrkTypes::ADCWaveform adcs(trkData.second.begin(), trkData.second.end());
+	__MOUT__ << "filling Summary histograms: panelID =  "<<sid.uniquePanel()<< " , planeID = " << sid.plane() << std::endl;
 	summary_fill(summary_histos, sid);
 		  
 	for (std::string name : histType_) {
